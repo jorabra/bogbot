@@ -10,7 +10,7 @@ from irc.client import ip_numstr_to_quad, ip_quad_to_numstr
 from model import Hostmask, Nickname, Consumption, Consumable
 from db import DatabaseConnection
 
-class TestBot(irc.bot.SingleServerIRCBot):
+class BogBot(irc.bot.SingleServerIRCBot):
     def __init__(self, channel, nickname, realname, server, port=6667):
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nickname, realname)
         self.channel = channel
@@ -125,7 +125,7 @@ def main():
     nickname = sys.argv[3]
     realname = sys.argv[4]
 
-    bot = TestBot(channel, nickname, realname, server, port)
+    bot = BogBot(channel, nickname, realname, server, port)
     bot.start()
 
 if __name__ == "__main__":

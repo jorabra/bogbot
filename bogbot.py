@@ -3,7 +3,7 @@
 
 import sys
 
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 import irc.bot
 import irc.strings
 from irc.client import ip_numstr_to_quad, ip_quad_to_numstr
@@ -30,26 +30,20 @@ class BogBot(irc.bot.SingleServerIRCBot):
         if event.arguments[0].strip().startswith("!"):
             self.do_command(event, event.arguments[0][1:])
 
-    def add_or_update_hostmask(self, hostmask):
-        nick, user, host = self.parse_hostmask(hostmask)
+    def add_or_update_hostmask(self, hostmask_str):
+        nick, user, host = self.parse_hostmask(hostmask_str)
+        hostmask_id, nick_present = self.is_nick_in_hostmask(nick, user, host)
 
-        with self.dbcon.scoped_db_session() as session:
-            # Add check for corresponding ip-address -- host lookup
-            hostmask = session.query(Hostmask).filter(Hostmask.username==user).\
-                        filter(Hostmask.hostname==host).all()
-            if len(hostmask) == 1:
-                if nick in (obj.nickname for obj in hostmask[0].nickname):
-                    print "Nickname, username and hostmask already registered."
-                    return hostmask[0].id
-                else:
-                    print "Username and hostmask already registered; adding nick."
-                    return self.dbcon.add_nick(nick, user, host)
-            elif len(hostmask) > 1:
-                sys.exit("Returned more than one Hostmask object.")
+        if hostmask_id is not None:
+            if nick_present:
+                print "Nickname, username and hostmask already registered."
+                return hostmask_id
             else:
-                print "Username and hostmask not registered; adding hostmask."
-                return self.dbcon.add_hostmask(nick, user, host)
-            print "What happened?"
+                print "Username and hostmask already registered; adding nick."
+                return self.dbcon.add_nick(nick, user, host)
+        else:
+            print "Username and hostmask not registered; adding hostmask."
+            return self.dbcon.add_hostmask(nick, user, host)
 
     def add_consumption(self, hostmask_id, consumable_str, source=None):
         with self.dbcon.scoped_db_session() as session:
@@ -104,6 +98,23 @@ class BogBot(irc.bot.SingleServerIRCBot):
         user = user_host[0]
         host = user_host[1]
         return nick, user, host
+
+    def is_nick_in_hostmask(self, nick, user, host):
+        with self.dbcon.scoped_ro_db_session() as session:
+            try:
+                hostmask = session.query(Hostmask).\
+                            filter(Hostmask.username==user).\
+                            filter(Hostmask.hostname==host).one()
+            except MultipleResultsFound, e:
+                print "Multiple hostmasks found for username and hostname. Should not be possible: %s" % e
+                sys.exit(1)
+            except NoResultFound, e:
+                return None, False
+
+            if nick in (nickname.nickname for nickname in hostmask.nickname):
+                return hostmask.id, True
+            else:
+                return hostmask.id, False
 
 
 def main():

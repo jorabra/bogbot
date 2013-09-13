@@ -42,7 +42,6 @@ class DatabaseConnection(object):
             return hostmask.id
 
     def add_nick(self, nickname, username, hostname):
-        hostmask_id = None
         with self.scoped_db_session() as session:
             try:
                 hostmask = session.query(Hostmask).\
@@ -53,7 +52,7 @@ class DatabaseConnection(object):
                 hostmask_id = hostmask.id
             except NoResultFound, e:
                 print e
-        return hostmask_id
+            return hostmask.id
 
     def drop_and_create_db(self):
         drop(self.engine)

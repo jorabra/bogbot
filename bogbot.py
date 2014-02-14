@@ -19,11 +19,12 @@ class BogBot(irc.bot.SingleServerIRCBot):
         self.channel = channel
         self.dbcon = DatabaseConnection()
 
-    def on_nicknameinuse(self, c, e):
-        c.nick(c.get_nickname() + "_")
 
     def on_welcome(self, c, e):
         c.join(self.channel)
+
+    def on_nicknameinuse(self, c, e):
+        c.nick(c.get_nickname() + "_")
 
     def on_privmsg(self, c, e):
         self.do_command(e, e.arguments[0])

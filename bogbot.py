@@ -19,6 +19,8 @@ class BogBot(irc.bot.SingleServerIRCBot):
         self.channel = channel
         self.dbcon = DatabaseConnection()
 
+    def on_disconnect(self, c, e):
+        raise SystemExit()
 
     def on_welcome(self, c, e):
         c.join(self.channel)

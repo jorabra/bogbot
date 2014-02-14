@@ -9,8 +9,9 @@ import irc.bot
 import irc.logging
 import irc.strings
 
-from model import Hostmask, Nickname, Consumption, Consumable
 from db import DatabaseConnection
+from model import Hostmask, Nickname, Consumption, Consumable
+
 
 class BogBot(irc.bot.SingleServerIRCBot):
     def __init__(self, channel, nickname, realname, server, port=6667):

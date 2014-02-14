@@ -1,0 +1,6 @@
+SQLAlchemy==0.8.2
+argparse==1.2.1
+irc==8.5.1
+lxml==3.3.1
+pysqlite==1.0.1
+requests==2.2.1

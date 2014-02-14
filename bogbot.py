@@ -8,6 +8,8 @@ from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 import irc.bot
 import irc.logging
 import irc.strings
+import lxml.html
+import requests
 
 from db import DatabaseConnection
 from model import Hostmask, Nickname, Consumption, Consumable
@@ -34,6 +36,37 @@ class BogBot(irc.bot.SingleServerIRCBot):
     def on_pubmsg(self, srvcon, event):
         if event.arguments[0].strip().startswith("!"):
             self.do_command(event, event.arguments[0][1:])
+        else:
+            self.process_text(event)
+
+    def process_text(self, event):
+        message = event.arguments[0]
+        if "http" in  message:
+            start = message.find("http")
+            end = message.find(" ", start)
+            if end == -1:
+                url = message[start:]
+            else:
+                url = message[start:end]
+
+            url_meta = self._get_url_meta_string(url)
+            self.connection.notice(event.target, url_meta)
+
+    def _get_url_meta_string(self, url):
+        meta = ""
+        response = requests.get(url)
+        if url != response.url:
+            meta = "%s )> " % response.url
+        title = self._get_html_title(response.text)
+        meta = "%s%s" % (meta, title)
+        return meta
+
+    def _get_html_title(self, document):
+        """
+        Parse the string representation ('document') of the web page.
+        """
+        parsed_doc = lxml.html.document_fromstring(document)
+        return parsed_doc.find(".//title").text
 
     def add_or_update_hostmask(self, hostmask_str):
         nick, user, host = self.parse_hostmask(hostmask_str)

@@ -6,6 +6,7 @@ import sys
 
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 import irc.bot
+import irc.logging
 import irc.strings
 from irc.client import ip_numstr_to_quad, ip_quad_to_numstr
 
@@ -125,11 +126,13 @@ def get_args():
     parser.add_argument('nickname')
     parser.add_argument('realname')
     parser.add_argument('-p', '--port', default=6667, type=int)
+    irc.logging.add_arguments(parser)
     return parser.parse_args()
 
 def main():
 
     args = get_args()
+    irc.logging.setup(args)
 
     bot = BogBot(args.channel, args.nickname, args.realname, args.server, args.port)
     bot.start()

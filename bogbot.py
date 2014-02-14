@@ -8,7 +8,6 @@ from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 import irc.bot
 import irc.logging
 import irc.strings
-from irc.client import ip_numstr_to_quad, ip_quad_to_numstr
 
 from model import Hostmask, Nickname, Consumption, Consumable
 from db import DatabaseConnection

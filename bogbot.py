@@ -13,6 +13,7 @@ import requests
 
 from db import DatabaseConnection
 from model import Hostmask, Nickname, Consumption, Consumable
+from spotify_lookup import SpotifyLookup
 
 
 class BogBot(irc.bot.SingleServerIRCBot):
@@ -48,6 +49,12 @@ class BogBot(irc.bot.SingleServerIRCBot):
                 url = message[start:]
             else:
                 url = message[start:end]
+
+            if "spotify" in url:
+                spl = SpotifyLookup()
+                spotify_meta = spl.lookup(url)
+                self.connection.notice(event.target, spotify_meta)
+                return
 
             url_meta = self._get_url_meta_string(url)
             self.connection.notice(event.target, url_meta)

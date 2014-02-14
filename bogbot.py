@@ -57,7 +57,8 @@ class BogBot(irc.bot.SingleServerIRCBot):
                 return
 
             url_meta = self._get_url_meta_string(url)
-            self.connection.notice(event.target, url_meta)
+            if url_meta:
+                self.connection.notice(event.target, url_meta)
 
     def _get_url_meta_string(self, url):
         meta = ""
@@ -65,15 +66,21 @@ class BogBot(irc.bot.SingleServerIRCBot):
         if url != response.url:
             meta = "%s )> " % response.url
         title = self._get_html_title(response.text)
-        meta = "%s%s" % (meta, title)
-        return meta
+        if title:
+            meta = "%s%s" % (meta, title)
+            return meta
+        else:
+            return None
 
     def _get_html_title(self, document):
         """
         Parse the string representation ('document') of the web page.
         """
         parsed_doc = lxml.html.document_fromstring(document)
-        return parsed_doc.find(".//title").text
+        if parsed_doc:
+            return parsed_doc.find(".//title").text
+        else:
+            return None
 
     def add_or_update_hostmask(self, hostmask_str):
         nick, user, host = self.parse_hostmask(hostmask_str)

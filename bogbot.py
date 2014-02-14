@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import argparse
 import sys
 
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
@@ -117,27 +118,20 @@ class BogBot(irc.bot.SingleServerIRCBot):
                 return hostmask.id, False
 
 
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('server')
+    parser.add_argument('channel')
+    parser.add_argument('nickname')
+    parser.add_argument('realname')
+    parser.add_argument('-p', '--port', default=6667, type=int)
+    return parser.parse_args()
+
 def main():
-    import sys
-    if len(sys.argv) != 5:
-        print("Usage: testbot <server[:port]> <channel> <nickname> <realname>")
-        sys.exit(1)
 
-    s = sys.argv[1].split(":", 1)
-    server = s[0]
-    if len(s) == 2:
-        try:
-            port = int(s[1])
-        except ValueError:
-            print("Error: Erroneous port.")
-            sys.exit(1)
-    else:
-        port = 6667
-    channel = sys.argv[2]
-    nickname = sys.argv[3]
-    realname = sys.argv[4]
+    args = get_args()
 
-    bot = BogBot(channel, nickname, realname, server, port)
+    bot = BogBot(args.channel, args.nickname, args.realname, args.server, args.port)
     bot.start()
 
 if __name__ == "__main__":

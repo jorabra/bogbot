@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import os
 import sys
+import traceback
 
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 import irc.bot
@@ -35,10 +37,17 @@ class BogBot(irc.bot.SingleServerIRCBot):
         self.do_command(e, e.arguments[0])
 
     def on_pubmsg(self, srvcon, event):
-        if event.arguments[0].strip().startswith("!"):
-            self.do_command(event, event.arguments[0][1:])
-        else:
-            self.process_text(event)
+        try:
+            if event.arguments[0].strip().startswith("!"):
+                self.do_command(event, event.arguments[0][1:])
+            else:
+                self.process_text(event)
+        except Exception as e:
+            exc_type, exc_obj, exc_traceback = sys.exc_info()
+            tb = traceback.format_list(traceback.extract_tb(exc_traceback)[-1:])[-1]
+            tb = ''.join(tb.splitlines())
+            msg = "%s: %s  %s" % (exc_type, e, tb)
+            self.connection.privmsg("jabr", msg)
 
     def process_text(self, event):
         message = event.arguments[0]

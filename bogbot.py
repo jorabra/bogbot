@@ -86,10 +86,10 @@ class BogBot(irc.bot.SingleServerIRCBot):
         Parse the string representation ('document') of the web page.
         """
         parsed_doc = lxml.html.document_fromstring(document)
-        if parsed_doc:
-            return parsed_doc.find(".//title").text
-        else:
-            return None
+        title = parsed_doc.find(".//title")
+        if title:
+            return title.text
+        return None
 
     def add_or_update_hostmask(self, hostmask_str):
         nick, user, host = self.parse_hostmask(hostmask_str)

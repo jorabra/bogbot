@@ -29,6 +29,17 @@ class DatabaseConnection(object):
         finally:
             session.close()
 
+    @contextmanager
+    def scoped_ro_db_session(self):
+        session = self.Session()
+        try:
+            yield session
+        except:
+            raise
+        finally:
+            session.rollback()
+            session.close()
+
     def add_hostmask(self, nickname, username, hostname):
         hostmask = Hostmask(username, hostname)
         n = Nickname(nickname)

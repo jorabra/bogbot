@@ -77,7 +77,7 @@ class BogBot(irc.bot.SingleServerIRCBot):
         if url != response.url:
             meta = "%s )> " % response.url
         title = self._get_html_title(response.text)
-        if title:
+        if title is not None:
             meta = "%s%s" % (meta, title)
             return meta
         else:
@@ -89,7 +89,7 @@ class BogBot(irc.bot.SingleServerIRCBot):
         """
         parsed_doc = lxml.html.document_fromstring(document)
         title = parsed_doc.find(".//title")
-        if title:
+        if title is not None:
             return title.text
         return None
 

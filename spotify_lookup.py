@@ -21,11 +21,13 @@ class SpotifyLookup(object):
             # TODO: raise exception?
             return
 
-        query = "%s:%s:%s" % (self.lookup_base_url, target, spotify_id)
-        response = requests.get(query)
-        meta_json = json.loads(response.text)
-        info_string = self._make_info_string(meta_json)
-        return info_string
+        if target and spotify_id is not None:
+            query = "%s:%s:%s" % (self.lookup_base_url, target, spotify_id)
+            response = requests.get(query)
+            meta_json = json.loads(response.text)
+            info_string = self._make_info_string(meta_json)
+            return info_string
+        return None
 
     def _make_info_string(self, meta_json):
         target = meta_json['info']['type']

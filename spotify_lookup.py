@@ -31,8 +31,8 @@ class SpotifyLookup(object):
 
     def _make_info_string(self, meta_json):
         target = meta_json['info']['type']
-        info_string = ""
-        if target != "artist":
+        info_string = None
+        if target == "track":
             info_string += target.title() + ": "
             target_name = meta_json[target]['name']
             info_string += target_name + " by "
@@ -48,6 +48,12 @@ class SpotifyLookup(object):
                 for artist in target_artists:
                     info_string += ", %s" % artist
                 info_string += " and %s" % last_artist
+        elif target == 'album':
+            info_string += target.title() + ": "
+            target_name = meta_json[target]['name']
+            info_string += target_name + " by " meta_json[target]['artist']
+        elif target == 'artist':
+            info_string += target.title() + ": " + meta_json[target]['name']
 
         return info_string
 

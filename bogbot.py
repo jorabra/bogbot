@@ -91,7 +91,8 @@ class BogBot(irc.bot.SingleServerIRCBot):
         parsed_doc = lxml.html.document_fromstring(document)
         title = parsed_doc.find(".//title")
         if title is not None:
-            return title.text
+            title_stripped = ''.join(title.text.splitlines())
+            return title_stripped
         return None
 
     def add_or_update_hostmask(self, hostmask_str):

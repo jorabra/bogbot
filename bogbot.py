@@ -61,7 +61,7 @@ class BogBot(irc.bot.SingleServerIRCBot):
             else:
                 url = message[start:end]
 
-            if "spotify" in url:
+            if "spotify.com" in url:
                 spl = SpotifyLookup()
                 spotify_meta = spl.lookup(url)
                 self.connection.notice(event.target, spotify_meta)

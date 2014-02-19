@@ -97,7 +97,7 @@ class BogBot(irc.bot.SingleServerIRCBot):
         title = parsed_doc.find(".//title")
         if title is not None:
             title_stripped = ''.join(title.text.splitlines())
-            return title_stripped
+            return title_stripped.strip()
 
     def _check_redirect(self, url):
         """

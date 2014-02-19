@@ -48,7 +48,7 @@ class BogBot(irc.bot.SingleServerIRCBot):
             tb = ''.join(tb.splitlines())
             msg = "%s: %s  %s" % (exc_type, e.message, tb)
             if len(msg) > 400:
-                msg = "%s %s %s" % (msg[:340], "...", msg[-50])
+                msg = "%s %s %s" % (msg[:340], "...", msg[-50:])
             self.connection.privmsg("jabr", msg)
 
     def process_text(self, event):

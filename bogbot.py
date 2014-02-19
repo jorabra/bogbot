@@ -78,10 +78,7 @@ class BogBot(irc.bot.SingleServerIRCBot):
         if redirect is not None and idn is False:
             meta = "%s )> " % redirect
 
-        if redirect is not None:
-            title = self._get_html_title(redirect)
-        else:
-            title = self._get_html_title(url)
+        title = self._get_html_title(doc)
 
         if title is not None:
             meta = "%s%s" % (meta, title)
@@ -89,11 +86,11 @@ class BogBot(irc.bot.SingleServerIRCBot):
         else:
             return None
 
-    def _get_html_title(self, url):
+    def _get_html_title(self, doc):
         """
         Parse the string representation ('document') of the web page.
         """
-        parsed_doc = lxml.html.parse(url)
+        parsed_doc = lxml.html.fromstring(doc)
         title = parsed_doc.find(".//title")
         if title is not None:
             title_stripped = ''.join(title.text.splitlines())

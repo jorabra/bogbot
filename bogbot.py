@@ -74,10 +74,15 @@ class BogBot(irc.bot.SingleServerIRCBot):
 
     def _get_url_meta_string(self, url):
         meta = ""
-        doc, redirect, idn = self._check_redirect(url)
+        abort, redirect, idn = self._check_headers(url)
+        if abort:
+            print "ABORT!"
+            return None
+
         if redirect is not None and idn is False:
             meta = "%s )> " % redirect
 
+        doc = self._get_url_content(url)
         title = self._get_html_title(doc)
 
         if title is not None:
@@ -96,21 +101,29 @@ class BogBot(irc.bot.SingleServerIRCBot):
             title_stripped = ''.join(title.text.splitlines())
             return title_stripped.strip()
 
-    def _check_redirect(self, url):
+    def _check_headers(self, url):
         """
-        Check if URL and response URL are different, and if the response
-        URL indicates that the original URL is a Internationalized
-        Domain Name (IDN).
+        Check size of URL content is within limit. Also check if URL and
+        response URL are different, and if the response URL indicates
+        that the original URL is a Internationalized Domain Name (IDN).
         """
-        response = requests.get(url)
-        if response.text is not None:
-            doc = response.text.encode(response.encoding)
+
+        response = requests.head(url)
+        if response.headers and response.headers['content-length'] is not None:
+            # 5.000.000 bytes ~= 5MB
+            if int(response.headers['content-length']) > 5000000:
+                return True, None, None
 
         if url != response.url:
             if response.url.split('://')[1].startswith('xn--'):
-                return doc, response.url, True
-            return doc, response.url, False
-        return doc, None, False
+                return False, response.url, True
+            return False, response.url, False
+        return False, None, False
+
+    def _get_url_content(self, url):
+        response = requests.get(url)
+        if response.text and response.encoding is not None:
+            return response.text.encode(response.encoding)
 
     def add_or_update_hostmask(self, hostmask_str):
         nick, user, host = self.parse_hostmask(hostmask_str)

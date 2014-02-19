@@ -74,10 +74,15 @@ class BogBot(irc.bot.SingleServerIRCBot):
 
     def _get_url_meta_string(self, url):
         meta = ""
-        redirect = self._check_redirect(url)
-        if redirect is not None:
+        redirect, idn = self._check_redirect(url)
+        if redirect is not None and idn is False:
             meta = "%s )> " % redirect
-        title = self._get_html_title(url)
+
+        if redirect is not None:
+            title = self._get_html_title(redirect)
+        else:
+            title = self._get_html_title(url)
+
         if title is not None:
             meta = "%s%s" % (meta, title)
             return meta
@@ -95,9 +100,17 @@ class BogBot(irc.bot.SingleServerIRCBot):
             return title_stripped
 
     def _check_redirect(self, url):
+        """
+        Check if URL and response URL are different, and if the response
+        URL indicates that the original URL is a Internationalized
+        Domain Name (IDN).
+        """
         response = requests.get(url)
         if url != response.url:
-            return response.url
+            if response.url.split('://')[1].startswith('xn--'):
+                return response.url, True
+            return response.url, False
+        return None, None
 
     def add_or_update_hostmask(self, hostmask_str):
         nick, user, host = self.parse_hostmask(hostmask_str)

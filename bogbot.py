@@ -84,8 +84,7 @@ class BogBot(irc.bot.SingleServerIRCBot):
 
         doc = self._get_url_content(url)
         title = self._get_html_title(doc)
-
-        if title is not None:
+        if title is not None and title != "":
             meta = "%s%s" % (meta, title)
             return meta
         else:

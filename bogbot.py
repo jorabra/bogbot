@@ -74,7 +74,7 @@ class BogBot(irc.bot.SingleServerIRCBot):
 
     def _get_url_meta_string(self, url):
         meta = ""
-        redirect, idn = self._check_redirect(url)
+        doc, redirect, idn = self._check_redirect(url)
         if redirect is not None and idn is False:
             meta = "%s )> " % redirect
 
@@ -106,11 +106,14 @@ class BogBot(irc.bot.SingleServerIRCBot):
         Domain Name (IDN).
         """
         response = requests.get(url)
+        if response.text is not None:
+            doc = response.text.encode(response.encoding)
+
         if url != response.url:
             if response.url.split('://')[1].startswith('xn--'):
-                return response.url, True
-            return response.url, False
-        return None, None
+                return doc, response.url, True
+            return doc, response.url, False
+        return doc, None, False
 
     def add_or_update_hostmask(self, hostmask_str):
         nick, user, host = self.parse_hostmask(hostmask_str)

@@ -108,10 +108,19 @@ class BogBot(irc.bot.SingleServerIRCBot):
         """
 
         response = requests.head(url)
-        if response.headers and response.headers['content-length'] is not None:
-            # 5.000.000 bytes ~= 5MB
-            if int(response.headers['content-length']) > 5000000:
-                return True, None, None
+        if response.headers is not None:
+            if "content-type" in response.headers:
+                if "text/html" not in response.headers['content-type']:
+                    self.connection.privmsg("jabr", "No 'text/html' in headers for %s" % url)
+                    return True, None, None
+            if "content-length" in response.headers:
+                # 5.000.000 bytes ~= 5MB
+                if int(response.headers['content-length']) > 5000000:
+                    self.connection.privmsg("jabr", "Content length too long for %s" % url)
+                    return True, None, None
+        else:
+            self.connection.privmsg("jabr", "No response headers for %s" % url)
+            return True, None, None
 
         if url != response.url:
             if response.url.split('://')[1].startswith('xn--'):

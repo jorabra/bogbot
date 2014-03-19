@@ -16,6 +16,7 @@ import requests
 from db import DatabaseConnection
 from model import Hostmask, Nickname, Consumption, Consumable
 from spotify_lookup import SpotifyLookup
+from twitter_lookup import TwitterLookup
 
 
 class BogBot(irc.bot.SingleServerIRCBot):
@@ -66,6 +67,12 @@ class BogBot(irc.bot.SingleServerIRCBot):
                 spotify_meta = spl.lookup(url)
                 if spotify_meta is not None:
                     self.connection.notice(event.target, spotify_meta)
+                return
+            elif "twitter.com" and "status" in url:
+                twit_lookup = TwitterLookup()
+                twit_meta = twit_lookup.compose_meta(url)
+                if twit_meta is not None:
+                    self.connection.notice(event.target, twit_meta)
                 return
 
             url_meta = self._get_url_meta_string(url)

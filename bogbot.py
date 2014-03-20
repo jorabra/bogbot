@@ -92,13 +92,13 @@ class BogBot(irc.bot.SingleServerIRCBot):
     def _get_url_meta(self, url):
         abort, redirect, idn = self._check_headers(url)
         if abort:
-            return None
+            return None, None, None
 
         doc = self._get_url_content(url)
         title = self._get_html_title(doc)
         if title is not None and title != "":
             return redirect, idn, title
-        return
+        return None, None, None
 
     def _compose_url_meta_string(self, url, redirect, idn, title):
         meta = ""

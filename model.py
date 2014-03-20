@@ -74,8 +74,8 @@ class URL(Base):
     id = Column(Integer, primary_key=True)
     url = Column(String, nullable=False)
     title = Column(String, nullable=False)
-    added = Column(DateTime, nullable=False)
     channel = Column(String)
+    added = Column(DateTime, default=datetime.now, nullable=False)
 
     hostmask_id = Column(Integer, ForeignKey('hostmask.id'))
     hostmask = relationship('Hostmask', backref=backref('url', order_by=id))

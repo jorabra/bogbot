@@ -14,7 +14,7 @@ import lxml.html
 import requests
 
 from db import DatabaseConnection
-from model import Hostmask, Nickname, Consumption, Consumable
+from model import Hostmask, Nickname, Consumption, Consumable, URL
 from spotify_lookup import SpotifyLookup
 from twitter_lookup import TwitterLookup
 
@@ -55,6 +55,9 @@ class BogBot(irc.bot.SingleServerIRCBot):
     def process_text(self, event):
         message = event.arguments[0]
         if "http" in  message:
+            # Add nick/user/host
+            hostmask_id = self.add_or_update_hostmask(event.source)
+
             start = message.find("http")
             end = message.find(" ", start)
             if end == -1:
@@ -77,6 +80,11 @@ class BogBot(irc.bot.SingleServerIRCBot):
 
             redirect, idn, title = self._get_url_meta(url)
             if title is not None:
+                if redirect is not None:
+                    self.add_url(redirect, title, hostmask_id, event.target)
+                else:
+                    self.add_url(url, title, hostmask_id, event.target)
+
                 url_meta = self._compose_url_meta_string(url, redirect,
                                                          idn, title)
                 self.connection.notice(event.target, url_meta)
@@ -177,6 +185,27 @@ class BogBot(irc.bot.SingleServerIRCBot):
             consumption = Consumption(source, consumable)
             hostmask = session.query(Hostmask).get(hostmask_id)
             hostmask.consumption.append(consumption)
+
+    def add_url(self, url, title, hostmask_id, channel=None):
+        with self.dbcon.scoped_db_session() as session:
+            url_qr = session.query(URL).filter(URL.url==url).all() # One?
+            if len(url_qr) == 0:
+                url_obj = URL()
+                #self.connection.privmsg("jabr", type(url_obj.hostmask_id))
+
+                url_obj.url = url
+                url_obj.title = title
+                url_obj.channel = channel
+                url_obj.hostmask_id = hostmask_id
+                session.add(url_obj)
+                msg = "URL %s added by %d" % (url, hostmask_id)
+                self.connection.privmsg("jabr", msg)
+            elif len(url_qr) == 1:
+                msg = "URL %s already exist" % url
+                self.connection.privmsg("jabr", msg)
+            else:
+                msg = "ERROR: %d instances of URL (%s) in DB" % (len(url_qr), url)
+                self.connection.privmsg("jabr", msg)
 
     def do_command(self, event, cmd):
         print "%s requested command %s" % (event.source.nick, cmd)

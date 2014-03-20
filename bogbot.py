@@ -75,27 +75,31 @@ class BogBot(irc.bot.SingleServerIRCBot):
                     self.connection.notice(event.target, twit_meta)
                 return
 
-            url_meta = self._get_url_meta_string(url)
-            if url_meta:
+            redirect, idn, title = self._get_url_meta(url)
+            if title is not None:
+                url_meta = self._compose_url_meta_string(url, redirect,
+                                                         idn, title)
                 self.connection.notice(event.target, url_meta)
 
-    def _get_url_meta_string(self, url):
-        meta = ""
+    def _get_url_meta(self, url):
         abort, redirect, idn = self._check_headers(url)
         if abort:
-            print "ABORT!"
             return None
-
-        if redirect is not None and idn is False:
-            meta = "%s )> " % redirect
 
         doc = self._get_url_content(url)
         title = self._get_html_title(doc)
         if title is not None and title != "":
+            return redirect, idn, title
+        return
+
+    def _compose_url_meta_string(self, url, redirect, idn, title):
+        meta = ""
+        if redirect is not None and idn is False:
+            meta = "%s )> " % redirect
+
+        if title is not None and title != "":
             meta = "%s%s" % (meta, title)
             return meta
-        else:
-            return None
 
     def _get_html_title(self, doc):
         """

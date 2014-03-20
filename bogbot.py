@@ -79,12 +79,15 @@ class BogBot(irc.bot.SingleServerIRCBot):
                 return
 
             redirect, idn, title = self._get_url_meta(url)
-            if title is not None:
-                if redirect is not None:
-                    self.add_url(redirect, title, hostmask_id, event.target)
-                else:
-                    self.add_url(url, title, hostmask_id, event.target)
 
+            # Log url
+            if redirect is not None:
+                self.add_url(redirect, title, hostmask_id, event.target)
+            else:
+                self.add_url(url, title, hostmask_id, event.target)
+
+            # Output meta
+            if title is not None:
                 url_meta = self._compose_url_meta_string(url, redirect,
                                                          idn, title)
                 self.connection.notice(event.target, url_meta)

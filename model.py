@@ -73,8 +73,8 @@ class URL(Base):
 
     id = Column(Integer, primary_key=True)
     url = Column(String, nullable=False)
-    title = Column(String, nullable=False)
     channel = Column(String)
+    title = Column(String, nullable=True)
     added = Column(DateTime, default=datetime.now, nullable=False)
 
     hostmask_id = Column(Integer, ForeignKey('hostmask.id'))

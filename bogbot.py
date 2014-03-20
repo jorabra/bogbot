@@ -158,13 +158,13 @@ class BogBot(irc.bot.SingleServerIRCBot):
 
         if hostmask_id is not None:
             if nick_present:
-                print "Nickname, username and hostmask already registered."
+                self.connection.privmsg("jabr", "Nickname, username and hostmask already registered.")
                 return hostmask_id
             else:
-                print "Username and hostmask already registered; adding nick."
+                self.connection.privmsg("jabr", "Username and hostmask already registered; adding nick.")
                 return self.dbcon.add_nick(nick, user, host)
         else:
-            print "Username and hostmask not registered; adding hostmask."
+            self.connection.privmsg("jabr", "Username and hostmask not registered; adding hostmask.")
             return self.dbcon.add_hostmask(nick, user, host)
 
     def add_consumption(self, hostmask_id, consumable_str, source=None):
@@ -172,15 +172,14 @@ class BogBot(irc.bot.SingleServerIRCBot):
             consumable_qr = session.query(Consumable).\
                             filter(Consumable.name==consumable_str).all() # One?
             if len(consumable_qr) == 0:
-                print "Consumable not registered. Registering."
+                self.connection.privmsg("jabr", "Consumable not registered. Registering.")
                 consumable = Consumable(consumable_str)
                 session.add(consumable)
             elif len(consumable_qr) == 1:
-                print "The consumable was found in database."
+                self.connection.privmsg("jabr", "The consumable was found in database.")
                 consumable = consumable_qr[0]
             else:
-                print "Several consumables with same name!"
-                sys.exit(1)
+                self.connection.privmsg("jabr","ERROR: Several consumables with same name!")
 
             consumption = Consumption(source, consumable)
             hostmask = session.query(Hostmask).get(hostmask_id)
@@ -208,10 +207,10 @@ class BogBot(irc.bot.SingleServerIRCBot):
                 self.connection.privmsg("jabr", msg)
 
     def do_command(self, event, cmd):
-        print "%s requested command %s" % (event.source.nick, cmd)
+        self.connection.privmsg("jabr", "%s requested command %s" % (event.source.nick, cmd))
 
         hostmask_id = self.add_or_update_hostmask(event.source)
-        print "Hostmask ID: %s" % hostmask_id
+        self.connection.privmsg("jabr", "Hostmask ID: %s" % hostmask_id)
 
         if cmd == "kaffe":
             self.add_consumption(hostmask_id, cmd, event.target)
@@ -249,8 +248,8 @@ class BogBot(irc.bot.SingleServerIRCBot):
                             filter(Hostmask.username==user).\
                             filter(Hostmask.hostname==host).one()
             except MultipleResultsFound, e:
-                print "Multiple hostmasks found for username and hostname. Should not be possible: %s" % e
-                sys.exit(1)
+                self.connection.privmsg("jabr",
+                    "Multiple hostmasks found for username and hostname. Should not be possible: %s" % e)
             except NoResultFound, e:
                 return None, False
 

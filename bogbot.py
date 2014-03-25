@@ -161,13 +161,13 @@ class BogBot(irc.bot.SingleServerIRCBot):
 
         if hostmask_id is not None:
             if nick_present:
-                self.connection.privmsg("jabr", "Nickname, username and hostmask already registered.")
+                #self.connection.privmsg("jabr", "Nickname, username and hostmask already registered.")
                 return hostmask_id
             else:
-                self.connection.privmsg("jabr", "Username and hostmask already registered; adding nick.")
+                self.connection.privmsg("jabr", "Username and hostmask already registered, but not nick. Adding %s" % nick)
                 return self.dbcon.add_nick(nick, user, host)
         else:
-            self.connection.privmsg("jabr", "Username and hostmask not registered; adding hostmask.")
+            self.connection.privmsg("jabr", "Username and hostmask not registered. Adding %s %s %s" % (nick, user, host))
             return self.dbcon.add_hostmask(nick, user, host)
 
     def add_consumption(self, hostmask_id, consumable_str, source=None):
